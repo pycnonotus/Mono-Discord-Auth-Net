@@ -1,0 +1,8 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/Pycnonotus.MonoDiscordAuth/Pycnonotus.MonoDiscordAuth.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="TestWebApi/TestWebApi.csproj" />
+  </Folder>
+</Solution>
