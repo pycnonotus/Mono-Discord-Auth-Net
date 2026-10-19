@@ -6,7 +6,7 @@ sealed class DiscordAuthOptions
 
     public string ClientId { get; init; } = string.Empty;
     public string ClientSecret { get; init; } = string.Empty;
-    public string AdminUserId { get; init; } = string.Empty;
+    public string[] AdminUserIds { get; init; } = [];
     public string CallbackPath { get; init; } = "/signin-discord";
     public string[] AllowedReturnOrigins { get; init; } = [];
     public bool IsAddAuthEndpoint { get; init; } = false;

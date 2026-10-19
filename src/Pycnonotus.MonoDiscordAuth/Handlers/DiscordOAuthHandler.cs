@@ -104,7 +104,7 @@ internal sealed class DiscordOAuthHandler(
 
     private bool IsAdmin(in string id)
     {
-        return string.Equals(id, _discordOptions.AdminUserId, StringComparison.OrdinalIgnoreCase);
+        return _discordOptions.AdminUserIds.Contains(id, StringComparer.OrdinalIgnoreCase);
     }
 
     private HttpRequestMessage CreateUserInformationRequest(OAuthTokenResponse tokens)

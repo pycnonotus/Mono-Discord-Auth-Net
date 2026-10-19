@@ -1,5 +1,6 @@
 ﻿using System.Security.Claims;
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.OAuth;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
@@ -15,8 +16,7 @@ public static class DiscordAuthenticationExtensions
     public static WebApplicationBuilder AddDiscordAuthentication(this WebApplicationBuilder builder)
     {
         builder.AddDiscordAuthenticationOptions();
-        // builder.AddCookieAndDiscordOAuthAuthentication();
-
+        builder.AddCookieAndDiscordOAuthAuthentication();
         return builder;
     }
     
@@ -26,11 +26,31 @@ public static class DiscordAuthenticationExtensions
             .BindConfiguration(DiscordAuthOptions.SectionName)
             .ValidateRequired(options => options.ClientId, DiscordAuthOptionsFailures.ClientIdMissing)
             .ValidateRequired(options => options.ClientSecret, DiscordAuthOptionsFailures.ClientSecretMissing)
-            .ValidateRequired(options => options.AdminUserId, DiscordAuthOptionsFailures.AdminUserIdMissing)
+            .Validate(
+                options => options.AdminUserIds is { Length: > 0 }
+                           && options.AdminUserIds.All(id => !string.IsNullOrWhiteSpace(id)),
+                DiscordAuthOptionsFailures.AdminUserIdsMissing)
             .Validate(
                 options => AuthPathValidator.IsRootedPath(options.CallbackPath),
                 DiscordAuthOptionsFailures.CallbackPathInvalid)
             .ValidateOnStart();
+    }
+
+    private static void AddCookieAndDiscordOAuthAuthentication(this WebApplicationBuilder builder)
+    {
+        builder.Services
+            .AddAuthentication(options =>
+            {
+                options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+                options.DefaultChallengeScheme = DiscordAuthConstants.AuthenticationScheme;
+            })
+            .AddCookie(options =>
+            {
+                options.Cookie.Name = DiscordAuthConstants.SessionCookieName;
+            })
+            .AddOAuth<OAuthOptions, DiscordOAuthHandler>(
+                DiscordAuthConstants.AuthenticationScheme,
+                options => builder.ConfigureDiscordOAuthScheme(options));
     }
     
     private static void ConfigureDiscordOAuthScheme(
